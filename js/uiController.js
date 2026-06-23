@@ -524,29 +524,59 @@ class UIController {
   }
 
   /**
-   * Populate the model dropdown with API_MODELS presets
+   * Populate the model dropdown with API_MODELS presets.
+   * Uses multiple fallback strategies to always find a match.
    */
   populateModelSelect() {
-    const select = this.elements.settingsModel;
+    var select = this.elements.settingsModel;
     if (!select) return;
     select.innerHTML = '';
 
-    // Find current model id by matching model name and baseUrl
-    let currentModelId = null;
-    for (const m of API_MODELS) {
-      if (m.model === API_CONFIG.model && m.baseUrl === API_CONFIG.baseUrl) {
-        currentModelId = m.id;
+    // Strategy 1: exact match (model + baseUrl)
+    var currentModelId = null;
+    for (var i = 0; i < API_MODELS.length; i++) {
+      if (API_MODELS[i].model === API_CONFIG.model && API_MODELS[i].baseUrl === API_CONFIG.baseUrl) {
+        currentModelId = API_MODELS[i].id;
         break;
       }
     }
 
-    API_MODELS.forEach(m => {
-      const opt = document.createElement('option');
+    // Strategy 2: match by model name only
+    if (!currentModelId) {
+      for (var j = 0; j < API_MODELS.length; j++) {
+        if (API_MODELS[j].model === API_CONFIG.model) {
+          currentModelId = API_MODELS[j].id;
+          break;
+        }
+      }
+    }
+
+    // Strategy 3: match by provider
+    if (!currentModelId) {
+      for (var k = 0; k < API_MODELS.length; k++) {
+        if (API_MODELS[k].provider === API_CONFIG.modelProvider) {
+          currentModelId = API_MODELS[k].id;
+          break;
+        }
+      }
+    }
+
+    // Fallback: use first model in the list
+    if (!currentModelId && API_MODELS.length > 0) {
+      currentModelId = API_MODELS[0].id;
+    }
+
+    // Build option elements
+    for (var n = 0; n < API_MODELS.length; n++) {
+      var m = API_MODELS[n];
+      var opt = document.createElement('option');
       opt.value = m.id;
       opt.textContent = m.name;
-      if (m.id === currentModelId) opt.selected = true;
+      if (m.id === currentModelId) {
+        opt.selected = true;
+      }
       select.appendChild(opt);
-    });
+    }
   }
 
   closeSettings() {
@@ -569,13 +599,18 @@ class UIController {
     APP_CONFIG.examBoard = e.settingsExamBoard.value;
 
     // API - Apply model preset from dropdown
-    const selectedModelId = e.settingsModel.value;
-    const preset = API_MODELS.find(m => m.id === selectedModelId);
-    if (preset) {
-      API_CONFIG.modelProvider = preset.provider;
-      API_CONFIG.model = preset.model;
-      API_CONFIG.baseUrl = preset.baseUrl;
-      API_CONFIG.apiKey = preset.apiKey;
+    var selectedModelId = e.settingsModel.value;
+    if (selectedModelId && typeof API_MODELS !== 'undefined') {
+      for (var i = 0; i < API_MODELS.length; i++) {
+        if (API_MODELS[i].id === selectedModelId) {
+          var preset = API_MODELS[i];
+          API_CONFIG.modelProvider = preset.provider;
+          API_CONFIG.model = preset.model;
+          API_CONFIG.baseUrl = preset.baseUrl;
+          API_CONFIG.apiKey = preset.apiKey;
+          break;
+        }
+      }
     }
     // Also update apiKey and baseUrl from manual inputs if changed
     if (e.settingsApiKey.value && e.settingsApiKey.value !== API_CONFIG.apiKey) {
