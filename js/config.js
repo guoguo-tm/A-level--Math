@@ -1,12 +1,31 @@
 // ========== API Configuration ==========
 const API_CONFIG = {
-  modelProvider: "OpenAI",
-  model: "gpt-5.5",
-  baseUrl: "https://shaobianer.com",
-  apiKey: "sk-03d431ea64e48804e09d1eecd140aa07af161f117c1b62a2e65a55c977554138",
-  wireApi: "responses",
+  modelProvider: "DeepSeek",
+  model: "deepseek-chat",
+  baseUrl: "https://api.deepseek.com",
+  apiKey: "sk-b6c361d876c54023bcb8dd83d5003174",
   requiresAuth: true,
 };
+
+// ========== Available Model Presets ==========
+const API_MODELS = [
+  {
+    id: "deepseek-v4",
+    name: "DeepSeek-V4",
+    provider: "DeepSeek",
+    model: "deepseek-chat",
+    baseUrl: "https://api.deepseek.com",
+    apiKey: "sk-b6c361d876c54023bcb8dd83d5003174",
+  },
+  {
+    id: "gpt-5.5",
+    name: "GPT-5.5 (OpenAI Compatible)",
+    provider: "OpenAI",
+    model: "gpt-5.5",
+    baseUrl: "https://shaobianer.com",
+    apiKey: "sk-03d431ea64e48804e09d1eecd140aa07af161f117c1b62a2e65a55c977554138",
+  },
+];
 
 // ========== App Configuration ==========
 const APP_CONFIG = {

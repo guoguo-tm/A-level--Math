@@ -516,9 +516,37 @@ class UIController {
     e.settingsLanguage.value = i18n.getLang();
     e.settingsExamBoard.value = APP_CONFIG.examBoard;
     e.settingsApiKey.value = API_CONFIG.apiKey;
-    e.settingsModel.value = API_CONFIG.model;
     e.settingsBaseUrl.value = API_CONFIG.baseUrl;
     e.settingsDarkMode.checked = document.body.classList.contains('dark-mode');
+
+    // Populate model dropdown
+    this.populateModelSelect();
+  }
+
+  /**
+   * Populate the model dropdown with API_MODELS presets
+   */
+  populateModelSelect() {
+    const select = this.elements.settingsModel;
+    if (!select) return;
+    select.innerHTML = '';
+
+    // Find current model id by matching model name and baseUrl
+    let currentModelId = null;
+    for (const m of API_MODELS) {
+      if (m.model === API_CONFIG.model && m.baseUrl === API_CONFIG.baseUrl) {
+        currentModelId = m.id;
+        break;
+      }
+    }
+
+    API_MODELS.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.name;
+      if (m.id === currentModelId) opt.selected = true;
+      select.appendChild(opt);
+    });
   }
 
   closeSettings() {
@@ -540,10 +568,22 @@ class UIController {
     // Exam board
     APP_CONFIG.examBoard = e.settingsExamBoard.value;
 
-    // API
-    API_CONFIG.apiKey = e.settingsApiKey.value;
-    API_CONFIG.model = e.settingsModel.value;
-    API_CONFIG.baseUrl = e.settingsBaseUrl.value;
+    // API - Apply model preset from dropdown
+    const selectedModelId = e.settingsModel.value;
+    const preset = API_MODELS.find(m => m.id === selectedModelId);
+    if (preset) {
+      API_CONFIG.modelProvider = preset.provider;
+      API_CONFIG.model = preset.model;
+      API_CONFIG.baseUrl = preset.baseUrl;
+      API_CONFIG.apiKey = preset.apiKey;
+    }
+    // Also update apiKey and baseUrl from manual inputs if changed
+    if (e.settingsApiKey.value && e.settingsApiKey.value !== API_CONFIG.apiKey) {
+      API_CONFIG.apiKey = e.settingsApiKey.value;
+    }
+    if (e.settingsBaseUrl.value && e.settingsBaseUrl.value !== API_CONFIG.baseUrl) {
+      API_CONFIG.baseUrl = e.settingsBaseUrl.value;
+    }
 
     // Dark mode
     const dark = e.settingsDarkMode.checked;
